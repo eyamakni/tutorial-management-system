@@ -1,0 +1,174 @@
+<div class="container-fluid mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2>👨‍🎓 Espace Étudiant</h2>
+      <p class="text-muted">Bienvenue, {{ currentUser?.username }}</p>
+    </div>
+  </div>
+
+  <!-- Recherche -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Rechercher un tutoriel..."
+          [(ngModel)]="searchTitle"
+          (input)="searchTutorials()"
+        />
+        <button class="btn btn-outline-secondary" type="button">
+          🔍
+        </button>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="alert alert-info mb-0">
+        📚 {{ filteredTutorials.length }} tutoriel(s) disponible(s)
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="!isLoading">
+    <!-- Liste des tutoriels -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>📚 Tutoriels disponibles</h5>
+        </div>
+        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+          <div *ngFor="let tutorial of filteredTutorials" 
+               class="card mb-2 cursor-pointer tutorial-card"
+               [class.border-primary]="selectedTutorial?.id === tutorial.id"
+               [class.selected]="selectedTutorial?.id === tutorial.id"
+               (click)="selectTutorial(tutorial)">
+            <div class="card-body p-3">
+              <h6 class="card-title mb-1">
+                <span class="badge bg-success me-2">✅</span>
+                {{ tutorial.title }}
+              </h6>
+              <p class="card-text text-muted small mb-0">
+                {{ tutorial.description }}
+              </p>
+            </div>
+          </div>
+          
+          <div *ngIf="filteredTutorials.length === 0" class="text-center text-muted py-4">
+            <div *ngIf="searchTitle.trim(); else noTutorials">
+              <p>🔍 Aucun tutoriel trouvé pour "{{ searchTitle }}"</p>
+              <button class="btn btn-secondary btn-sm" (click)="searchTitle = ''; searchTutorials()">
+                Voir tous les tutoriels
+              </button>
+            </div>
+            <ng-template #noTutorials>
+              <p>📚 Aucun tutoriel publié disponible</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Détail du tutoriel sélectionné -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>📖 Détail du tutoriel</h5>
+          <button 
+            *ngIf="selectedTutorial" 
+            class="btn btn-sm btn-outline-secondary"
+            (click)="clearSelection()"
+          >
+            ❌ Fermer
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="selectedTutorial; else noSelection">
+            <h4 class="mb-3">{{ selectedTutorial.title }}</h4>
+            <hr>
+            
+            <div class="mb-3">
+              <strong>📝 Description :</strong>
+              <p class="mt-2">{{ selectedTutorial.description }}</p>
+            </div>
+            
+            <div class="mb-3">
+              <strong>📊 Statut :</strong>
+              <span class="badge bg-success ms-2">✅ Publié</span>
+            </div>
+            
+            <!-- Zone de contenu du tutoriel -->
+            <div class="alert alert-light border">
+              <h6>📚 Contenu du tutoriel</h6>
+              <p class="mb-3">
+                Le contenu détaillé du tutoriel sera affiché ici.
+                Vous pouvez ajouter du texte, des images, des vidéos, etc.
+              </p>
+              
+              <!-- Simulation de contenu -->
+              <div class="bg-white p-3 rounded border">
+                <h6>Introduction</h6>
+                <p>Ce tutoriel vous guidera étape par étape...</p>
+                
+                <h6>Étapes principales</h6>
+                <ol>
+                  <li>Première étape importante</li>
+                  <li>Deuxième étape cruciale</li>
+                  <li>Finalisation du processus</li>
+                </ol>
+                
+                <div class="alert alert-info">
+                  <strong>💡 Conseil :</strong> N'hésitez pas à prendre des notes pendant votre lecture !
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions étudiant -->
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary btn-sm">
+                ⭐ Marquer comme favori
+              </button>
+              <button class="btn btn-outline-success btn-sm">
+                ✅ Marquer comme lu
+              </button>
+            </div>
+          </div>
+          
+          <ng-template #noSelection>
+            <div class="text-center text-muted py-5">
+              <div class="mb-3">
+                <i class="fas fa-book fa-3x text-muted"></i>
+              </div>
+              <h6>Sélectionnez un tutoriel</h6>
+              <p>Cliquez sur un tutoriel dans la liste pour voir les détails</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.tutorial-card:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+.tutorial-card.selected {
+  background-color: #e3f2fd;
+  border-color: #2196f3 !important;
+}
+</style>

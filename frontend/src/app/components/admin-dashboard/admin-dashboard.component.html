@@ -1,0 +1,122 @@
+<div class="container-fluid mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2>🛠️ Tableau de bord Administrateur</h2>
+      <p class="text-muted">Bienvenue, {{ currentUser?.username }}</p>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5>👥 Total Utilisateurs</h5>
+          <h3>{{ stats.totalUsers }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5>👨‍🏫 Enseignants</h5>
+          <h3>{{ stats.enseignants }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5>👨‍🎓 Étudiants</h5>
+          <h3>{{ stats.etudiants }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <h5>✅ Actifs</h5>
+          <h3>{{ stats.activeUsers }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions rapides -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5>🚀 Actions rapides</h5>
+        </div>
+        <div class="card-body">
+          <a routerLink="/admin/create-user" class="btn btn-primary me-2">
+            ➕ Créer un utilisateur
+          </a>
+          <a routerLink="/admin/users" class="btn btn-secondary me-2">
+            👥 Gérer les utilisateurs
+          </a>
+          <a routerLink="/tutorials" class="btn btn-info">
+            📚 Voir les tutoriels
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des utilisateurs récents -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5>👥 Utilisateurs récents</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Rôle</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users.slice(0, 5)">
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <!-- 🔧 CORRECTION: Utiliser les méthodes pour l'affichage correct -->
+                    <span class="badge" [class]="getBadgeClass(user.role)">
+                      {{ getRoleDisplay(user.role) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" 
+                          [class]="user.isActive ? 'bg-success' : 'bg-danger'">
+                      {{ user.isActive ? '✅ Actif' : '❌ Inactif' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm me-1"
+                            [class]="user.isActive ? 'btn-warning' : 'btn-success'"
+                            (click)="toggleUserStatus(user)">
+                      {{ user.isActive ? '⏸️' : '▶️' }}
+                    </button>
+                    <button class="btn btn-sm btn-danger" 
+                            (click)="deleteUser(user)">
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

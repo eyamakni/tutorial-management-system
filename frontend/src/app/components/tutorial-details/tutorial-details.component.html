@@ -1,0 +1,42 @@
+<div *ngIf="currentTutorial">
+  <h4>Tutorial</h4>
+  <div>
+    <label><strong>Title:</strong></label>
+    <input [(ngModel)]="currentTutorial.title" class="form-control" />
+  </div>
+  <div>
+    <label><strong>Description:</strong></label>
+    <input [(ngModel)]="currentTutorial.description" class="form-control" />
+  </div>
+  <div class="form-group">
+    <label><strong>Status:</strong></label>
+    <div>
+      <label>
+        <input
+          type="radio"
+          [checked]="currentTutorial.published"
+          (click)="updatePublished(true)"
+        />
+        Published
+      </label>
+      <label>
+        <input
+          type="radio"
+          [checked]="!currentTutorial.published"
+          (click)="updatePublished(false)"
+        />
+        Pending
+      </label>
+    </div>
+  </div>
+
+  <button class="btn btn-danger" (click)="deleteTutorial()">Delete</button>
+  <button class="btn btn-success" (click)="updateTutorial()">Update</button>
+
+  <p>{{ message }}</p>
+</div>
+
+<div *ngIf="!currentTutorial">
+  <br />
+  <p>Please select a Tutorial...</p>
+</div>

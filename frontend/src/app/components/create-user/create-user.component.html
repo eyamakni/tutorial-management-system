@@ -1,0 +1,149 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/admin">🛠️ Admin</a></li>
+          <li class="breadcrumb-item"><a routerLink="/admin/users">👥 Utilisateurs</a></li>
+          <li class="breadcrumb-item active">➕ Créer</li>
+        </ol>
+      </nav>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>➕ Créer un nouvel utilisateur</h3>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()" #userForm="ngForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="username">Nom d'utilisateur *</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="username"
+                    name="username"
+                    [(ngModel)]="userData.username"
+                    required
+                    minlength="3"
+                    #username="ngModel"
+                    placeholder="Ex: jean.dupont"
+                  />
+                  <div *ngIf="username.invalid && username.touched" class="text-danger">
+                    <small *ngIf="username.errors?.['required']">Le nom d'utilisateur est requis</small>
+                    <small *ngIf="username.errors?.['minlength']">Minimum 3 caractères</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="email">Email *</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    name="email"
+                    [(ngModel)]="userData.email"
+                    required
+                    email
+                    #email="ngModel"
+                    placeholder="Ex: jean.dupont@example.com"
+                  />
+                  <div *ngIf="email.invalid && email.touched" class="text-danger">
+                    <small *ngIf="email.errors?.['required']">L'email est requis</small>
+                    <small *ngIf="email.errors?.['email']">Format d'email invalide</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="password">Mot de passe *</label>
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="password"
+                      name="password"
+                      [(ngModel)]="userData.password"
+                      required
+                      minlength="6"
+                      #password="ngModel"
+                      placeholder="Minimum 6 caractères"
+                    />
+                    <button type="button" class="btn btn-outline-secondary" 
+                            (click)="generatePassword()"
+                            title="Générer un mot de passe aléatoirement">
+                      🎲 Générer
+                    </button>
+                  </div>
+                  <div *ngIf="password.invalid && password.touched" class="text-danger">
+                    <small *ngIf="password.errors?.['required']">Le mot de passe est requis</small>
+                    <small *ngIf="password.errors?.['minlength']">Minimum 6 caractères</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="role">Rôle *</label>
+                  <select
+                    class="form-control"
+                    id="role"
+                    name="role"
+                    [(ngModel)]="userData.role"
+                    required
+                  >
+                    <option value="etudiant">👨‍🎓 Étudiant</option>
+                    <option value="enseignant">👨‍🏫 Enseignant</option>
+                  </select>
+                  <small class="form-text text-muted">
+                    Choisissez le rôle approprié pour cet utilisateur
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages -->
+            <div *ngIf="errorMessage" class="alert alert-danger">
+              <strong>❌ Erreur :</strong> {{ errorMessage }}
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success">
+              <strong>✅ Succès :</strong> {{ successMessage }}
+              <br><small>Redirection en cours...</small>
+            </div>
+
+            <!-- Boutons -->
+            <div class="form-group text-center">
+              <button
+                type="submit"
+                class="btn btn-primary me-2"
+                [disabled]="userForm.invalid || isLoading"
+              >
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isLoading ? "Création..." : "➕ Créer l'utilisateur" }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary me-2"
+                (click)="resetForm()"
+                [disabled]="isLoading"
+              >
+                🔄 Réinitialiser
+              </button>
+              <a routerLink="/admin/users" class="btn btn-outline-secondary">
+                ❌ Annuler
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
