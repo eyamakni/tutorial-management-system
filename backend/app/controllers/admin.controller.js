@@ -1,52 +1,35 @@
-const db = require("../models")
-const User = db.users
+const User = require("../models/user.model")
 const bcrypt = require("bcryptjs")
 
 // Créer un utilisateur (Enseignant ou Étudiant)
 exports.createUser = async (req, res) => {
   try {
-    // Vérifier que l'utilisateur connecté est admin
     if (req.user.role !== 'admin') {
-      return res.status(403).send({
-        message: "Accès refusé. Seuls les administrateurs peuvent créer des utilisateurs."
-      })
+      return res.status(403).send({ message: "Accès refusé. Seuls les administrateurs peuvent créer des utilisateurs." })
     }
 
-    // Validation stricte
     if (!req.body.username || !req.body.email || !req.body.password || !req.body.role) {
-      return res.status(400).send({
-        message: "Username, email, password et role sont OBLIGATOIRES !"
-      })
+      return res.status(400).send({ message: "Username, email, password et role sont OBLIGATOIRES !" })
     }
 
-    // Vérifier que le rôle est valide (pas admin)
     if (!['enseignant', 'etudiant'].includes(req.body.role)) {
-      return res.status(400).send({
-        message: "Le rôle doit être exactement 'enseignant' ou 'etudiant'"
-      })
+      return res.status(400).send({ message: "Le rôle doit être exactement 'enseignant' ou 'etudiant'" })
     }
 
-    // Vérifier si l'email existe déjà
-    const existingUser = await User.findOne({
-      where: { email: req.body.email }
-    })
+    const existingUser = await User.findOne({ email: req.body.email })
 
     if (existingUser) {
-      return res.status(400).send({
-        message: "Cet email est déjà utilisé !"
-      })
+      return res.status(400).send({ message: "Cet email est déjà utilisé !" })
     }
 
-    // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(req.body.password, 10)
 
-    // Créer l'utilisateur
     const userData = {
       username: req.body.username,
       email: req.body.email,
       password: hashedPassword,
       role: req.body.role,
-      createdBy: req.user.id,
+      createdBy: req.user._id,
       isActive: true
     }
 
@@ -55,7 +38,7 @@ exports.createUser = async (req, res) => {
     res.status(201).send({
       message: `${req.body.role} créé avec succès !`,
       user: {
-        id: newUser.id,
+        id: newUser._id,
         username: newUser.username,
         email: newUser.email,
         role: newUser.role,
@@ -64,9 +47,7 @@ exports.createUser = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).send({
-      message: error.message || "Erreur lors de la création de l'utilisateur."
-    })
+    res.status(500).send({ message: error.message || "Erreur lors de la création de l'utilisateur." })
   }
 }
 
@@ -74,21 +55,14 @@ exports.createUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
-      return res.status(403).send({
-        message: "Accès refusé."
-      })
+      return res.status(403).send({ message: "Accès refusé." })
     }
 
-    const users = await User.findAll({
-      attributes: ['id', 'username', 'email', 'role', 'isActive', 'createdAt'],
-      order: [['createdAt', 'DESC']]
-    })
+    const users = await User.find({}, 'username email role isActive createdAt').sort({ createdAt: -1 })
 
     res.status(200).send(users)
   } catch (error) {
-    res.status(500).send({
-      message: error.message || "Erreur lors de la récupération des utilisateurs."
-    })
+    res.status(500).send({ message: error.message || "Erreur lors de la récupération des utilisateurs." })
   }
 }
 
@@ -96,25 +70,18 @@ exports.getAllUsers = async (req, res) => {
 exports.toggleUserStatus = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
-      return res.status(403).send({
-        message: "Accès refusé."
-      })
+      return res.status(403).send({ message: "Accès refusé." })
     }
 
     const userId = req.params.id
-    const user = await User.findByPk(userId)
+    const user = await User.findById(userId)
 
     if (!user) {
-      return res.status(404).send({
-        message: "Utilisateur non trouvé."
-      })
+      return res.status(404).send({ message: "Utilisateur non trouvé." })
     }
 
-    // Ne pas permettre de désactiver un admin
     if (user.role === 'admin') {
-      return res.status(400).send({
-        message: "Impossible de modifier le statut d'un administrateur."
-      })
+      return res.status(400).send({ message: "Impossible de modifier le statut d'un administrateur." })
     }
 
     user.isActive = !user.isActive
@@ -123,7 +90,7 @@ exports.toggleUserStatus = async (req, res) => {
     res.status(200).send({
       message: `Utilisateur ${user.isActive ? 'activé' : 'désactivé'} avec succès.`,
       user: {
-        id: user.id,
+        id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -132,9 +99,7 @@ exports.toggleUserStatus = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).send({
-      message: error.message || "Erreur lors de la modification du statut."
-    })
+    res.status(500).send({ message: error.message || "Erreur lors de la modification du statut." })
   }
 }
 
@@ -142,36 +107,26 @@ exports.toggleUserStatus = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
-      return res.status(403).send({
-        message: "Accès refusé."
-      })
+      return res.status(403).send({ message: "Accès refusé." })
     }
 
     const userId = req.params.id
-    const user = await User.findByPk(userId)
+    const user = await User.findById(userId)
 
     if (!user) {
-      return res.status(404).send({
-        message: "Utilisateur non trouvé."
-      })
+      return res.status(404).send({ message: "Utilisateur non trouvé." })
     }
 
     if (user.role === 'admin') {
-      return res.status(400).send({
-        message: "Impossible de supprimer un administrateur."
-      })
+      return res.status(400).send({ message: "Impossible de supprimer un administrateur." })
     }
 
-    await user.destroy()
+    await user.remove()
 
-    res.status(200).send({
-      message: "Utilisateur supprimé avec succès."
-    })
+    res.status(200).send({ message: "Utilisateur supprimé avec succès." })
 
   } catch (error) {
-    res.status(500).send({
-      message: error.message || "Erreur lors de la suppression."
-    })
+    res.status(500).send({ message: error.message || "Erreur lors de la suppression." })
   }
 }
 
@@ -179,46 +134,38 @@ exports.deleteUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
-      return res.status(403).send({
-        message: "Accès refusé."
-      })
+      return res.status(403).send({ message: "Accès refusé." })
     }
 
     const userId = req.params.id
-    const user = await User.findByPk(userId)
+    const user = await User.findById(userId)
 
     if (!user) {
-      return res.status(404).send({
-        message: "Utilisateur non trouvé."
-      })
+      return res.status(404).send({ message: "Utilisateur non trouvé." })
     }
 
     if (user.role === 'admin') {
-      return res.status(400).send({
-        message: "Impossible de modifier un administrateur."
-      })
+      return res.status(400).send({ message: "Impossible de modifier un administrateur." })
     }
 
-    // Données à mettre à jour
     const updateData = {}
-    
+
     if (req.body.username) updateData.username = req.body.username
     if (req.body.email) updateData.email = req.body.email
     if (req.body.role && ['enseignant', 'etudiant'].includes(req.body.role)) {
       updateData.role = req.body.role
     }
-    
-    // Si nouveau mot de passe
     if (req.body.password) {
       updateData.password = await bcrypt.hash(req.body.password, 10)
     }
 
-    await user.update(updateData)
+    Object.assign(user, updateData)
+    await user.save()
 
     res.status(200).send({
       message: "Utilisateur modifié avec succès.",
       user: {
-        id: user.id,
+        id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -227,8 +174,6 @@ exports.updateUser = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).send({
-      message: error.message || "Erreur lors de la modification."
-    })
+    res.status(500).send({ message: error.message || "Erreur lors de la modification." })
   }
 }

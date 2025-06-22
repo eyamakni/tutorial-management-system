@@ -1,5 +1,6 @@
 const express = require("express")
 const cors = require("cors")
+const mongoose = require("mongoose")
 
 const app = express()
 
@@ -12,29 +13,38 @@ app.use(cors(corsOptions))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-const db = require("./app/models")
+const User = require("./app/models/user.model")
 
-// 🆕 NOUVEAU : Créer un admin par défaut au démarrage
+mongoose.connect("mongodb://localhost:27017/testdb", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log("✅ Connexion à MongoDB réussie.")
+  createDefaultAdmin()
+})
+.catch(err => {
+  console.error("❌ Erreur de connexion MongoDB :", err)
+  process.exit(1)
+})
+
 const createDefaultAdmin = async () => {
   try {
     const bcrypt = require("bcryptjs")
-    
-    // Vérifier si un admin existe déjà
-    const adminExists = await db.users.findOne({
-      where: { role: 'admin' }
-    })
+
+    const adminExists = await User.findOne({ role: "admin" })
 
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash("admin123", 10)
-      await db.users.create({
+      await User.create({
         username: "admin",
         email: "admin@example.com",
         password: hashedPassword,
         role: "admin",
         isActive: true,
-        createdBy: null // Premier admin créé automatiquement
+        createdBy: null
       })
-      
+
       console.log("\n" + "=".repeat(50))
       console.log("✅ ADMINISTRATEUR PAR DÉFAUT CRÉÉ")
       console.log("=".repeat(50))
@@ -50,33 +60,19 @@ const createDefaultAdmin = async () => {
   }
 }
 
-// 🔧 SYNCHRONISATION DE LA BASE DE DONNÉES
-db.sequelize
-  .sync()
-  .then(() => {
-    console.log("✅ Base de données synchronisée (tables recréées).")
-    console.log("📋 Tables créées: users, tutorials")
-    return createDefaultAdmin()
-  })
-  .catch((err) => {
-    console.error("❌ Échec de la synchronisation de la base:", err.message)
-    process.exit(1) // Arrêter le serveur en cas d'erreur critique
-  })
-
-// 🌐 ROUTES
+// Routes
 app.get("/", (req, res) => {
-  res.json({ 
+  res.json({
     message: "🎓 Bienvenue dans le système de gestion des tutoriels.",
     version: "2.0.0",
     endpoints: {
       auth: "/api/auth",
-      tutorials: "/api/tutorials", 
+      tutorials: "/api/tutorials",
       admin: "/api/admin"
     }
   })
 })
 
-// Chargement des routes
 try {
   require("./app/routes/tutorial.routes")(app)
   require("./app/routes/auth.routes")(app)
@@ -87,17 +83,14 @@ try {
   process.exit(1)
 }
 
-// 🚀 DÉMARRAGE DU SERVEUR
 const PORT = process.env.PORT || 8080
 app.listen(PORT, () => {
   console.log("\n" + "🚀".repeat(20))
   console.log(`🚀 SERVEUR DÉMARRÉ SUR LE PORT ${PORT}`)
   console.log(`🌐 API disponible sur: http://localhost:${PORT}`)
-  console.log(`📚 Documentation: http://localhost:${PORT}`)
   console.log("🚀".repeat(20) + "\n")
 })
 
-// 🛡️ GESTION DES ERREURS GLOBALES
 process.on('uncaughtException', (error) => {
   console.error('❌ Erreur non gérée:', error)
   process.exit(1)

@@ -1,35 +1,12 @@
-module.exports = (sequelize, Sequelize) => {
-  const User = sequelize.define("user", {
-    username: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    email: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true,
-      },
-    },
-    password: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    role: {
-      type: Sequelize.ENUM('admin', 'enseignant', 'etudiant'), // 🔄 MODIFIÉ : Rôles spécifiques
-      allowNull: false, // 🔄 MODIFIÉ : Obligatoire, pas de valeur par défaut
-    },
-    isActive: { // 🆕 NOUVEAU : Pour activer/désactiver les comptes
-      type: Sequelize.BOOLEAN,
-      defaultValue: true,
-    },
-    createdBy: { // 🆕 NOUVEAU : Qui a créé ce compte
-      type: Sequelize.INTEGER,
-      allowNull: true,
-    }
-  })
+const mongoose = require('mongoose')
 
-  return User
-}
+const UserSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email:    { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role:     { type: String, enum: ['admin', 'enseignant', 'etudiant'], required: true },
+  isActive: { type: Boolean, default: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
+}, { timestamps: true })
+
+module.exports = mongoose.model('User', UserSchema)
